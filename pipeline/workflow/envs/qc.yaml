@@ -1,0 +1,7 @@
+channels:
+  - conda-forge
+  - bioconda
+dependencies:
+  - multiqc=1.21
+  - deeptools=3.5.4
+  - samtools=1.19

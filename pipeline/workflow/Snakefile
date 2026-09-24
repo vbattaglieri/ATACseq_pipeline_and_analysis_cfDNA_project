@@ -1,0 +1,20 @@
+# =============================================================================
+# ATAC-seq pipeline (Snakemake)
+# FASTQ -> trim -> (optional Xenome) -> bwa-mem2 -> filter -> chrM removal ->
+# dedup -> MACS2 -> Corces consensus peaks -> counts + QC (TSS, MultiQC)
+# =============================================================================
+
+configfile: "config/config.yaml"
+
+
+include: "rules/common.smk"
+include: "rules/trimming.smk"
+include: "rules/mapping.smk"
+include: "rules/filtering.smk"
+include: "rules/peaks.smk"
+include: "rules/qc.smk"
+
+
+rule all:
+    input:
+        all_outputs(),

@@ -1,0 +1,38 @@
+# ---- macOS ----
+.DS_Store
+._*
+.smbdelete*
+
+# ---- Snakemake ----
+.snakemake/
+pipeline/results/
+pipeline/logs/
+pipeline/.snakemake/
+
+# ---- R / IDE ----
+.RData
+.Rhistory
+.Rproj.user/
+
+# ---- Large data & alignments (deposit in GEO/SRA/Zenodo, not git) ----
+*.bam
+*.bam.bai
+*.sam
+*.cram
+*.bw
+*.bigWig
+*.fastq
+*.fastq.gz
+*.fq.gz
+*.narrowPeak
+*_summits.bed
+*.saf
+
+# ---- Third-party references (download yourself) ----
+*.gmt
+
+# ---- Logs & scratch ----
+*.log
+tmp_*
+prova_*
+err_Xenome_*

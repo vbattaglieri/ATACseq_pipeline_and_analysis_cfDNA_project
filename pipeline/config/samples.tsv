@@ -1,0 +1,5 @@
+sample	fastq_1	fastq_2	condition
+HCT116_WT_Rep1	/path/to/fastq/HCT116_WT_Rep1_R1.fastq.gz	/path/to/fastq/HCT116_WT_Rep1_R2.fastq.gz	WT
+HCT116_WT_Rep2	/path/to/fastq/HCT116_WT_Rep2_R1.fastq.gz	/path/to/fastq/HCT116_WT_Rep2_R2.fastq.gz	WT
+HCT116_DKO_Rep1	/path/to/fastq/HCT116_DKO_Rep1_R1.fastq.gz	/path/to/fastq/HCT116_DKO_Rep1_R2.fastq.gz	DKO
+HCT116_DKO_Rep2	/path/to/fastq/HCT116_DKO_Rep2_R1.fastq.gz	/path/to/fastq/HCT116_DKO_Rep2_R2.fastq.gz	DKO

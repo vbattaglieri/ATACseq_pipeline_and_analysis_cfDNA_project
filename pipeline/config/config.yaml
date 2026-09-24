@@ -1,0 +1,52 @@
+# =====================================================================
+# ATAC-seq pipeline configuration
+# =====================================================================
+
+# Sample sheet: TSV with columns  sample  fastq_1  fastq_2  condition
+samples: "config/samples.tsv"
+
+# ---- Reference genome (GRCh38 / hg38) ----
+reference:
+  # bwa-mem2 index prefix (run `bwa-mem2 index` on the genome FASTA beforehand)
+  bwa_mem2_index: "/path/to/references/hg38/bwa-mem2/GRCh38"
+  # ENCODE blacklist BED (https://github.com/Boyle-Lab/Blacklist)
+  blacklist: "/path/to/references/hg38/hg38-blacklist.v2.bed"
+  # Chromosome sizes (for downstream / bigwig if enabled)
+  chrom_sizes: "/path/to/references/hg38/hg38.chrom.sizes"
+  # TSS annotation BED for TSS-enrichment QC (e.g. MANE / RefSeq TSS)
+  tss_bed: "/path/to/references/hg38/MANE.GRCh38.v1.3_TSS.bed"
+
+# ---- Mitochondrial removal (default ON) ----
+# Reads mapping to this contig are discarded after alignment.
+mito_contig: "chrM"
+
+# ---- Optional Xenome host/graft (or mito) filtering (default OFF) ----
+# Enable for xenograft samples that need host-read separation.
+xenome:
+  enabled: false
+  binary: "/path/to/tools/xenome"
+  index: "/path/to/references/xenome_hg38_mito/hg38_mito"
+  graft_prefix: "graft"   # which Xenome class to keep
+
+# ---- Peak calling (MACS2, BAMPE) ----
+macs2:
+  genome_size: "hs"       # effective genome size
+  qvalue: 0.05
+  extra: "--nomodel --shift -100 --extsize 200 --keep-dup all"
+
+# ---- Consensus peak set (Corces iterative overlap) ----
+consensus:
+  spm: 5                  # score-per-million cutoff
+  rule: "2"               # min samples a peak must appear in
+  extend: 250             # bp to extend around summit
+
+# ---- Alignment filtering ----
+filter:
+  min_mapq: 30
+  # keep only properly-paired reads (samtools -f2) and remove duplicates
+
+# ---- Resources (threads per rule; memory handled by the SLURM profile) ----
+threads:
+  trim: 4
+  align: 16
+  macs2: 2

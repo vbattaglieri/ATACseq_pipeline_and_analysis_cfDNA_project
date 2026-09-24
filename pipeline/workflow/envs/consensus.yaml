@@ -1,0 +1,17 @@
+channels:
+  - conda-forge
+  - bioconda
+dependencies:
+  - r-base=4.3
+  - r-optparse
+  - r-dplyr
+  - r-yaml
+  - r-readr
+  - bioconductor-genomicranges
+  - bioconductor-rtracklayer
+  - bioconductor-biostrings
+  - bioconductor-summarizedexperiment
+  - bioconductor-genomeinfodb
+  - bioconductor-bsgenome
+  - bioconductor-bsgenome.hsapiens.ucsc.hg38
+  - bioconductor-edger
