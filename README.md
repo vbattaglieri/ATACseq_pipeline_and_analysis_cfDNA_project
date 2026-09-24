@@ -1,20 +1,20 @@
-# ATAC-seq analysis — cfDNA project (HCT116 WT vs DKO)
+# ATAC-seq analysis for cfDNA project (HCT116 WT vs DKO)
 
 Chromatin-accessibility (ATAC-seq) analysis for a colorectal-cancer cfDNA study,
 centred on **HCT116 wild-type (WT)** vs its **DNMT1/DNMT3B double-knockout (DKO)**
-derivative, with additional cell-line and T-cell samples used for characterization.
+derivative.
 
 This repository is organised in **two parts**:
 
 | Folder | What it is |
 |--------|------------|
-| [`original_analysis/`](original_analysis/) | The **actual scripts** used for the published analysis — bash/R/Python, cleaned and with machine-specific paths genericized. Shows the real, exploratory workflow. |
-| [`pipeline/`](pipeline/) | A **productized, reproducible reimplementation** in [Snakemake](https://snakemake.readthedocs.io) — modular rules, per-step conda environments, a SLURM profile, and a samplesheet-driven interface. Shows how I'd engineer the same analysis for reuse. |
+| [`original_analysis/`](original_analysis/) | The **actual scripts** used for the published analysis |
+| [`pipeline/`](pipeline/) | A **productized, reproducible reimplementation** in [Snakemake](https://snakemake.readthedocs.io) — modular rules, per-step conda environments, a SLURM profile, and a samplesheet-driven interface. |
 
 > Part of a published project. If you use or refer to this code, please cite the
-> associated publication *(add citation / DOI here)*.
+> associated publication *Pessei, V., Macagno, M., Mariella, E. et al. DNA demethylation triggers cell free DNA release in colorectal cancer cells. Genome Med 16, 118 (2024). https://doi.org/10.1186/s13073-024-01386-5*.
 
-## Workflow at a glance
+## Overview of the workflow
 
 ```
 FASTQ
@@ -67,10 +67,8 @@ snakemake --profile profiles/slurm --use-conda
 ```
 
 Key design choices (vs. the original scripts):
-- **bwa-mem2** replaces the IFOM-internal `idea` BWA wrapper → runnable anywhere.
 - **chrM removal by default**; **Xenome** host/graft filtering is optional
   (`xenome.enabled` in the config) for xenograft samples.
-- **Samplesheet-driven** (`config/samples.tsv`) instead of positional arguments.
 - **Per-rule conda environments** and pinned tool versions for reproducibility.
 
 ## Reference & data notes
@@ -78,8 +76,7 @@ Key design choices (vs. the original scripts):
 - Genome: **GRCh38 / hg38**. Build the `bwa-mem2` index and obtain the
   [ENCODE blacklist](https://github.com/Boyle-Lab/Blacklist) and a TSS BED
   (MANE / RefSeq) before running.
-- Raw/processed sequencing data are deposited in a public repository
-  *(add GEO/SRA accession here)* — not tracked in git.
+- Raw and processed sequencing data are deposited and available in the European Nucleotide Archive (ENA) with PRJEB33045 (https://www.ebi.ac.uk/ena/browser/view/PRJEB33045), PRJEB33640 (https://www.ebi.ac.uk/ena/browser/view/PRJEB33640), and PRJEB57691 (https://www.ebi.ac.uk/ena/browser/view/PRJEB57691) accession codes.
 
 ## License
 
