@@ -6,8 +6,10 @@ ATAC-seq analysis in the cfDNA project, centred on **HCT116 wild-type (WT)** vs 
 **DNMT1/DNMT3B double-knockout (DKO)** derivative (plus additional cell-line and
 T-cell samples).
 
-> Part of a published project. If you use this pipeline, please cite the
-> associated publication *(add citation / DOI here)*.
+> Part of a published project. If you use this pipeline, please cite:
+> Pessei, V., Macagno, M., Mariella, E. et al. *DNA demethylation triggers cell
+> free DNA release in colorectal cancer cells.* Genome Med 16, 118 (2024).
+> https://doi.org/10.1186/s13073-024-01386-5
 
 ## Workflow
 
@@ -108,9 +110,12 @@ The differential-accessibility step (WT vs DKO) is run downstream in R on
 
 ## Data availability
 
-Raw and processed sequencing data are deposited in a public repository
-*(add GEO/SRA accession here)* — not tracked in git. Reference/genome files and
-gene-set databases must be obtained from their original sources.
+Raw and processed sequencing data are deposited in the European Nucleotide
+Archive (ENA) under accession codes
+[PRJEB33045](https://www.ebi.ac.uk/ena/browser/view/PRJEB33045),
+[PRJEB33640](https://www.ebi.ac.uk/ena/browser/view/PRJEB33640), and
+[PRJEB57691](https://www.ebi.ac.uk/ena/browser/view/PRJEB57691) — not tracked in
+git. Reference/genome files must be obtained from their original sources.
 
 ## License
 
