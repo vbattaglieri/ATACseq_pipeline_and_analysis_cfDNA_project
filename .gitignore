@@ -5,9 +5,8 @@
 
 # ---- Snakemake ----
 .snakemake/
-pipeline/results/
-pipeline/logs/
-pipeline/.snakemake/
+results/
+logs/
 
 # ---- R / IDE ----
 .RData

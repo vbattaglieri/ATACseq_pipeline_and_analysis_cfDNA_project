@@ -1,24 +1,19 @@
-# ATAC-seq analysis — cfDNA project (HCT116 WT vs DKO)
+# ATAC-seq pipeline — cfDNA project (HCT116 WT vs DKO)
 
-Chromatin-accessibility (ATAC-seq) analysis for a colorectal-cancer cfDNA study,
-centred on **HCT116 wild-type (WT)** vs its **DNMT1/DNMT3B double-knockout (DKO)**
-derivative, with additional cell-line and T-cell samples used for characterization.
+A modular, reproducible **[Snakemake](https://snakemake.readthedocs.io)** workflow
+for chromatin-accessibility (ATAC-seq) analysis. This is the pipeline used for the
+ATAC-seq analysis in the cfDNA project, centred on **HCT116 wild-type (WT)** vs its
+**DNMT1/DNMT3B double-knockout (DKO)** derivative (plus additional cell-line and
+T-cell samples).
 
-This repository is organised in **two parts**:
-
-| Folder | What it is |
-|--------|------------|
-| [`original_analysis/`](original_analysis/) | The **actual scripts** used for the published analysis — bash/R/Python, cleaned and with machine-specific paths genericized. Shows the real, exploratory workflow. |
-| [`pipeline/`](pipeline/) | A **productized, reproducible reimplementation** in [Snakemake](https://snakemake.readthedocs.io) — modular rules, per-step conda environments, a SLURM profile, and a samplesheet-driven interface. Shows how I'd engineer the same analysis for reuse. |
-
-> Part of a published project. If you use or refer to this code, please cite the
+> Part of a published project. If you use this pipeline, please cite the
 > associated publication *(add citation / DOI here)*.
 
-## Workflow at a glance
+## Workflow
 
 ```
 FASTQ
-  │  Trim Galore (adapter/quality trimming)
+  │  Trim Galore (adapter/quality trimming + FastQC)
   ▼
  [optional] Xenome  ── host/graft separation for xenograft samples
   │
@@ -37,51 +32,88 @@ consensus peak set  ← Corces & Granja iterative-overlap method (R)
   └─ QC: TSS enrichment (deepTools), fragment-size, MultiQC
 ```
 
-## `original_analysis/` — what was actually run
+## Layout
 
-- `scripts/ATAC_preprocessing.sh` — end-to-end preprocessing (Trim Galore →
-  Xenome mito/host filtering → BWA mapping → proper-pair filter → Picard dedup).
-- `scripts/createIterativeOverlapPeakSet.R` — consensus peak set, adapted from
-  **Corces & Granja et al., Science 2018** (attribution retained in the header).
-- `scripts/TSS_score.sh`, `scripts/depth_of_tss.sh` — TSS-enrichment scoring
-  (samtools depth over flank/center windows; MANE / RefSeq TSS references).
-- `scripts/create_metadata_FASTQ.sh` — builds the R1/R2/sample metadata sheet.
-- `scripts/python_helpers/` — small pandas/stdlib utilities (peak-value
-  correlation, median/min-max summarisation, methylation-probe filtering).
-- `results/` — selected QC figures (TSS enrichment, fragment-size and
-  insert-size distributions, replicate correlation).
+```
+.
+├── config/
+│   ├── config.yaml         # reference paths + parameters
+│   └── samples.tsv         # sample sheet (sample, fastq_1, fastq_2, condition)
+├── workflow/
+│   ├── Snakefile           # entry point
+│   ├── rules/
+│   │   ├── common.smk      # sample sheet parsing + targets
+│   │   ├── trimming.smk    # Trim Galore + FastQC
+│   │   ├── mapping.smk     # optional Xenome + bwa-mem2
+│   │   ├── filtering.smk   # proper-pair/MAPQ, chrM removal, Picard dedup
+│   │   ├── peaks.smk       # MACS2, consensus peaks, featureCounts
+│   │   └── qc.smk          # bigWig, TSS enrichment, MultiQC
+│   ├── envs/               # per-rule conda environments (pinned)
+│   └── scripts/
+│       └── createIterativeOverlapPeakSet.R   # Corces consensus method
+└── profiles/
+    └── slurm/config.yaml   # SLURM executor profile
+```
 
-## `pipeline/` — reproducible Snakemake workflow
+## Requirements
 
-See [`pipeline/README.md`](pipeline/README.md) for full usage. Quick version:
+- [Snakemake](https://snakemake.readthedocs.io) ≥ 8 and conda/mamba.
+- For SLURM: `snakemake-executor-plugin-slurm`.
+- All bioinformatics tools are provisioned automatically per-rule via
+  `--use-conda` (bwa-mem2, samtools, Picard, MACS2, bedtools, subread,
+  deepTools, MultiQC, R/Bioconductor, and optionally Xenome).
+
+## Setup
+
+1. **References** — edit `config/config.yaml`:
+   - `bwa_mem2_index`: build with `bwa-mem2 index genome.fa` (prefix path).
+   - `blacklist`: [ENCODE hg38 blacklist](https://github.com/Boyle-Lab/Blacklist).
+   - `tss_bed`: MANE/RefSeq TSS BED for the TSS-enrichment QC.
+   - `chrom_sizes`: hg38 chrom sizes.
+2. **Samples** — list your FASTQs in `config/samples.tsv` (tab-separated).
+3. **(Optional) Xenome** — for xenograft samples, set `xenome.enabled: true` and
+   point `binary`/`index` at your Xenome install and host/mito index. When off,
+   mitochondrial reads are removed post-alignment via samtools.
+
+## Run
 
 ```bash
-cd pipeline
-# 1. edit config/config.yaml (reference paths) and config/samples.tsv (your FASTQs)
-# 2. dry-run
+# dry run (shows the DAG of jobs without executing)
 snakemake -n --use-conda
-# 3. run locally
+
+# local execution
 snakemake --cores 16 --use-conda
-# 4. or on a SLURM cluster
+
+# SLURM cluster
 snakemake --profile profiles/slurm --use-conda
 ```
 
-Key design choices (vs. the original scripts):
-- **bwa-mem2** replaces the IFOM-internal `idea` BWA wrapper → runnable anywhere.
-- **chrM removal by default**; **Xenome** host/graft filtering is optional
-  (`xenome.enabled` in the config) for xenograft samples.
-- **Samplesheet-driven** (`config/samples.tsv`) instead of positional arguments.
-- **Per-rule conda environments** and pinned tool versions for reproducibility.
+## Outputs
 
-## Reference & data notes
+```
+results/
+├── trimmed/        # Trim Galore FASTQs
+├── aligned/        # sorted BAMs (bwa-mem2)
+├── dedup/          # analysis-ready, deduplicated BAMs (+ .bai)
+├── macs2/          # per-sample peaks (narrowPeak, summits)
+├── consensus/      # All_Samples.consensus_peaks.bed
+├── counts/         # consensus_counts.tsv (featureCounts matrix)
+├── tracks/         # CPM-normalised bigWig signal tracks
+├── tss/            # per-sample TSS-enrichment matrices
+└── qc/             # MultiQC report + dedup metrics
+```
 
-- Genome: **GRCh38 / hg38**. Build the `bwa-mem2` index and obtain the
-  [ENCODE blacklist](https://github.com/Boyle-Lab/Blacklist) and a TSS BED
-  (MANE / RefSeq) before running.
-- Raw/processed sequencing data are deposited in a public repository
-  *(add GEO/SRA accession here)* — not tracked in git.
+The differential-accessibility step (WT vs DKO) is run downstream in R on
+`results/counts/consensus_counts.tsv` (e.g. DESeq2 / edgeR).
+
+## Data availability
+
+Raw and processed sequencing data are deposited in a public repository
+*(add GEO/SRA accession here)* — not tracked in git. Reference/genome files and
+gene-set databases must be obtained from their original sources.
 
 ## License
 
-Code released under the [MIT License](LICENSE). The consensus-peak R script is
-adapted from Corces & Granja et al. (Science 2018) — please cite that work.
+Code released under the [MIT License](LICENSE). The consensus-peak R script
+(`workflow/scripts/createIterativeOverlapPeakSet.R`) is adapted from
+Corces & Granja et al. (Science 2018) — please cite that work.
